@@ -15,7 +15,7 @@ class LBPExtractor:
     def compute_lbp(self):
         height, width = self.image.shape
 
-        neighbor_offsets = [
+        OFFSETS = [
             (-1, -1), (-1, 0), (-1, 1), (0, 1),
             (1, 1), (1, 0), (1, -1), (0, -1)
         ]
@@ -25,7 +25,7 @@ class LBPExtractor:
             for c in range(1, width-1):
                 center_val = self.image[r, c]
                 code = 0
-                for i, (dr, dc) in enumerate(neighbor_offsets):
+                for i, (dr, dc) in enumerate(OFFSETS):
                     neighbor_val = self.image[r + dr, c + dc]
                     bit = 1 if neighbor_val >= center_val else 0
                     code |= (bit << (7 - i))
@@ -38,7 +38,7 @@ class LBPExtractor:
         if self.lbp_image is None:
             raise ValueError("call compute_lbp() first")
         
-        def count_transitions(code):
+        def _count_transitions(code):
             binary_str = f"{code:08b}"
             transitions = 0
             for i in range(8):
@@ -50,7 +50,7 @@ class LBPExtractor:
         for r in range(1, self.lbp_image.shape[0]-1):
             for c in range(1, self.lbp_image.shape[1]-1):
                 code = self.lbp_image[r, c]
-                if count_transitions(code) <= max_transitions:
+                if _count_transitions(code) <= max_transitions:
                     uniform_mask[r, c] = 1
         
         return uniform_mask
@@ -64,10 +64,3 @@ class LBPExtractor:
         for r, c in zip(rows, cols):
             points.append((r, c))
         return points
-    
-    def show_info(self):
-        print(f"Image shape: {self.image.shape}")
-        if self.lbp_image is not None:
-            print("LBP computed")
-        else:
-            print("LBP not computed")
